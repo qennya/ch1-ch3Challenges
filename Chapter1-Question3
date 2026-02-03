@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Node {
+    char *s;               // heap string
+    struct Node *prev, *next;
+} Node;
+
+static char *dupstr(const char *s) {
+    char *p = malloc(strlen(s) + 1);
+    if (p) strcpy(p, s);
+    return p;
+}
+
+void insert_front(Node **head, const char *s) {
+    Node *n = malloc(sizeof(Node));
+    n->s = dupstr(s);
+    n->prev = NULL;
+    n->next = *head;
+    if (*head) (*head)->prev = n;
+    *head = n;
+}
+
+Node *find(Node *head, const char *s) {
+    for (; head; head = head->next)
+        if (strcmp(head->s, s) == 0) return head;
+    return NULL;
+}
+
+void delete_node(Node **head, Node *n) {
+    if (!n) return;
+    if (n->prev) n->prev->next = n->next;
+    else *head = n->next;              // was head
+    if (n->next) n->next->prev = n->prev;
+    free(n->s);
+    free(n);
+}
+
+void print_list(Node *head) {
+    for (; head; head = head->next) {
+        printf("%s", head->s);
+        if (head->next) printf(" <-> ");
+    }
+    printf("\n");
+}
+
+int main(void) {
+    Node *head = NULL;
+
+    insert_front(&head, "cat");
+    insert_front(&head, "dog");
+    insert_front(&head, "bird");
+    print_list(head);                  // bird <-> dog <-> cat
+
+    Node *x = find(head, "dog");
+    delete_node(&head, x);
+    print_list(head);                  // bird <-> cat
+
+    // cleanup (delete remaining nodes)
+    while (head) delete_node(&head, head);
+
+    return 0;
+}
